@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "NXU 教务系统自动登录",
+  "short_name": "JWGL 自动登录",
+  "version": "2.1.0",
+  "description": "宁夏大学教务管理系统（jwgl.nxu.edu.cn / WebVPN）自动登录：后台反复请求直到登录成功并带 Cookie 打开页面，也可在登录页自动填表提交。支持百度 OCR 与自建验证码识别服务。",
+  "minimum_chrome_version": "102",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "JWGL 自动登录",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://jwgl.nxu.edu.cn/*",
+    "https://webvpn.nxu.edu.cn/*",
+    "https://aip.baidubce.com/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://jwgl.nxu.edu.cn/*",
+        "https://webvpn.nxu.edu.cn/https-*/*"
+      ],
+      "js": [
+        "src/content/dom-adapter.js",
+        "src/content/content-script.js"
+      ],
+      "css": [
+        "src/content/content.css"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": []
+}

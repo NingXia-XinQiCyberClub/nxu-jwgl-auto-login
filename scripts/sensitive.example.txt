@@ -1,0 +1,20 @@
+# 本机敏感词清单（精确匹配）
+#
+# 这个文件**不入库**：`.gitignore` 已排除。脚本 `scripts/push-clean.ps1` 推送前
+# 会读它，把里面的每一行当作「绝不能出现在公开快照里」的字面量。
+#
+# 为什么精确值要放在本机文件里、而不是直接写进脚本：
+# 脚本本身是要公开的。如果脚本里带着真实的 AK/SK，那它自己就成了泄露源
+# （哪怕用 base64 编码也一样，base64 不是加密）。
+#
+# 格式：一行一个，`#` 开头是注释，空行忽略。
+# 首次使用可以执行 `copy scripts\sensitive.example.txt scripts\sensitive.txt`。
+
+# —— 例：本人的学号、密码、姓名 ——
+# 12024000000
+# your-password
+# 张三
+
+# —— 例：真实 OCR 密钥（形如 24 位 / 32 位字母数字）——
+# AbCdEfGhIjKlMnOpQrStUvWx
+# AbCdEfGhIjKlMnOpQrStUvWxYz012345

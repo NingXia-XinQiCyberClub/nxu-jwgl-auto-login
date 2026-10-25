@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>设置 · 教务系统自动登录</title>
+  <link rel="stylesheet" href="./options.css">
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <main class="page">
+    <header class="page-head">
+      <h1>教务系统自动登录</h1>
+      <p class="page-sub">宁夏大学教务管理系统（jwgl.nxu.edu.cn）自动填写账号、识别验证码并登录。</p>
+    </header>
+
+    <form id="settings-form" class="form" novalidate>
+      <!-- ================= 账号 ================= -->
+      <section class="card" aria-labelledby="sec-account">
+        <div class="card-head">
+          <h2 id="sec-account">账号</h2>
+          <p class="card-desc">用于登录教务系统的学号与密码。</p>
+        </div>
+
+        <div class="row">
+          <label class="field">
+            <span class="field-label">学号</span>
+            <input id="acc-username" class="input" type="text" name="username"
+                   autocomplete="username" spellcheck="false" placeholder="例如 12020xxxxx">
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label class="field-label" for="acc-password">密码</label>
+            <div class="input-group">
+              <input id="acc-password" class="input" type="password" name="password"
+                     autocomplete="current-password" placeholder="教务系统登录密码">
+              <button id="acc-password-toggle" class="input-addon" type="button"
+                      aria-label="显示密码" aria-pressed="false" title="显示密码">
+                <svg class="eye" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                  <path d="M1.8 12s3.8-6.4 10.2-6.4S22.2 12 22.2 12s-3.8 6.4-10.2 6.4S1.8 12 1.8 12Z"
+                        fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+                <span class="addon-text">显示</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="note note-warn">
+          密码只保存在本机 <code>chrome.storage.local</code>，不会上传到任何服务器，也不会同步到你的 Google 账号。
+          但本机存储并非加密保险箱，<strong>请不要在公用或共享电脑上保存密码</strong>。
+        </p>
+      </section>
+
+      <!-- ================= 服务器地址 ================= -->
+      <section class="card" aria-labelledby="sec-servers">
+        <div class="card-head">
+          <h2 id="sec-servers">服务器地址</h2>
+          <p class="card-desc">按顺序尝试，第一个为主地址。只填域名或 IP 时会自动补上 https://。</p>
+        </div>
+
+        <div id="server-list" class="server-list"></div>
+        <div class="row row-inline">
+          <button id="server-add" class="btn btn-ghost" type="button">+ 添加备用地址</button>
+        </div>
+
+        <p id="permission-note" class="note">
+          保存时，如果列表里出现默认域名以外的地址，扩展会请求该域名的访问权限（用于读取验证码图片、注入登录脚本）。
+          这个请求必须由你在保存时确认；拒绝后该地址仍会保留，但无法自动登录。
+        </p>
+
+        <p id="permission-warning" class="note note-warn" hidden></p>
+
+        <details class="details">
+          <summary>常见备用地址（校园网内网 IP）</summary>
+          <p class="details-desc">点击即可填入一个备用地址，保存后扩展会请求该域名的访问权限。</p>
+          <div id="mirror-hints" class="chips"></div>
+        </details>
+      </section>
+
+      <!-- ================= 验证码识别 ================= -->
+      <section class="card" aria-labelledby="sec-captcha">
+        <div class="card-head">
+          <h2 id="sec-captcha">验证码识别</h2>
+          <p class="card-desc">决定验证码怎么得到。不确定就选「手动输入」，不需要任何配置。</p>
+        </div>
+
+        <fieldset class="fieldset">
+          <legend class="sr-only">验证码识别方式</legend>
+          <div class="segmented" role="radiogroup" aria-label="验证码识别方式">
+            <label class="segment">
+              <input type="radio" name="ocr-provider" value="manual" checked>
+              <span class="segment-body">
+                <span class="segment-title">手动输入</span>
+                <span class="segment-sub">推荐 · 无需配置</span>
+              </span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="ocr-provider" value="baidu">
+              <span class="segment-body">
+                <span class="segment-title">百度智能云 OCR</span>
+                <span class="segment-sub">需 API Key</span>
+              </span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="ocr-provider" value="remote">
+              <span class="segment-body">
+                <span class="segment-title">自建 OCR 服务</span>
+                <span class="segment-sub">ddddocr 等</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div id="ocr-baidu-panel" class="panel" hidden>
+          <div class="row row-2">
+            <label class="field">
+              <span class="field-label">API Key</span>
+              <input id="baidu-key" class="input" type="text" autocomplete="off" spellcheck="false">
+            </label>
+            <label class="field">
+              <span class="field-label">Secret Key</span>
+              <input id="baidu-secret" class="input" type="password" autocomplete="off" spellcheck="false">
+            </label>
+          </div>
+          <p class="note">
+            到
+            <a class="link" href="https://cloud.baidu.com/product/ocr/general" target="_blank" rel="noopener noreferrer">百度智能云 · 通用文字识别</a>
+            开通服务并创建应用，即可获得密钥；免费额度足够日常登录使用。识别结果是纯数字/字母的验证码。
+          </p>
+        </div>
+
+        <div id="ocr-remote-panel" class="panel" hidden>
+          <div class="row">
+            <label class="field">
+              <span class="field-label">服务地址（Endpoint）</span>
+              <input id="remote-endpoint" class="input" type="url" autocomplete="off" spellcheck="false"
+                     placeholder="http://127.0.0.1:8000/ocr">
+            </label>
+          </div>
+          <div class="row row-3">
+            <label class="field">
+              <span class="field-label">请求方法</span>
+              <select id="remote-method" class="input select">
+                <option value="POST">POST</option>
+                <option value="GET">GET</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">图片字段名</span>
+              <input id="remote-field" class="input" type="text" autocomplete="off" spellcheck="false" placeholder="image">
+            </label>
+            <label class="field">
+              <span class="field-label">结果路径</span>
+              <input id="remote-path" class="input" type="text" autocomplete="off" spellcheck="false" placeholder="result">
+            </label>
+          </div>
+          <p class="note">
+            图片会以 dataURL 文本提交（字段名默认 <code>image</code>）。结果路径支持 <code>a.b.c</code> 形式，
+            例如 <code>result</code>、<code>data.text</code>，可用于兼容 ddddocr 一类的自建服务。
+          </p>
+        </div>
+
+        <p id="ocr-manual-note" class="note">
+          手动输入模式不需要任何配置：登录时页面右上角会弹出面板，显示验证码图片并等待你输入。
+          这也是自动识别失败时的人工兜底。
+        </p>
+
+        <div class="row row-inline">
+          <button id="ocr-test" class="btn btn-ghost" type="button">测试识别服务</button>
+          <span id="ocr-test-result" class="test-result" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <!-- ================= 登录行为 ================= -->
+      <section class="card" aria-labelledby="sec-behavior">
+        <div class="card-head">
+          <h2 id="sec-behavior">登录行为</h2>
+          <p class="card-desc">控制什么时候自动登录、失败后怎么重试。</p>
+        </div>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <span class="switch-title">自动登录</span>
+            <span class="switch-sub">打开教务系统页面后自动开始填写并登录</span>
+          </span>
+          <input id="opt-enabled" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <span class="switch-title">自动提交</span>
+            <span class="switch-sub">关闭后只填好表单，由你手动点击页面上的登录按钮</span>
+          </span>
+          <input id="opt-auto-submit" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <div class="row row-3">
+          <label class="field">
+            <span class="field-label">最多尝试次数</span>
+            <input id="opt-max-attempts" class="input" type="number" min="1" max="20" step="1" inputmode="numeric">
+            <span class="field-hint">1 – 20 次</span>
+          </label>
+          <label class="field">
+            <span class="field-label">重试间隔</span>
+            <input id="opt-delay-sec" class="input" type="number" min="0.5" max="5" step="0.5" inputmode="decimal">
+            <span class="field-hint">单位：秒（0.5 – 5）</span>
+          </label>
+          <label class="field">
+            <span class="field-label">人工输入验证码超时</span>
+            <input id="opt-solve-timeout-sec" class="input" type="number" min="5" max="600" step="5" inputmode="numeric">
+            <span class="field-hint">单位：秒（5 – 600）</span>
+          </label>
+        </div>
+
+        <div class="row row-3">
+          <label class="field">
+            <span class="field-label">启动延迟</span>
+            <input id="opt-start-delay" class="input" type="number" min="0" max="15000" step="100" inputmode="numeric">
+            <span class="field-hint">单位：毫秒（0 – 15000）</span>
+          </label>
+          <label class="field">
+            <span class="field-label">验证码长度</span>
+            <input id="opt-captcha-length" class="input" type="number" min="0" max="12" step="1" inputmode="numeric">
+            <span class="field-hint">0 = 自动探测输入框上限</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- ================= 登录方式（静默请求） ================= -->
+      <section class="card" aria-labelledby="sec-silent">
+        <div class="card-head">
+          <h2 id="sec-silent">登录方式 · 后台请求</h2>
+          <p class="card-desc">
+            开启后，扩展不再依赖页面上的登录框，而是在后台反复请求教务系统：取验证码 → 识别 → 提交登录。
+            一旦成功，立刻用当前 cookie 打开页面。这就是原 Python 脚本的行为，适合抢课、抢成绩这类需要反复刷的场景。
+          </p>
+        </div>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <span class="switch-title">使用后台请求模式</span>
+            <span class="switch-sub">关闭时仍走「打开页面 → 自动填表提交」，需要页面上有登录框</span>
+          </span>
+          <input id="opt-silent-enabled" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <div id="silent-panel" class="silent-panel">
+          <label class="field">
+            <span class="field-label">登录入口地址</span>
+            <input id="opt-silent-entry" class="input" type="url" spellcheck="false" autocomplete="off"
+                   placeholder="https://jwgl.nxu.edu.cn/index.action">
+            <span class="field-hint">
+              把你自己能打开的那个登录页地址整条粘进来，扩展会据此推导验证码和登录地址。<br>
+              校园内：<code>https://jwgl.nxu.edu.cn/index.action</code><br>
+              校园外（WebVPN）：<code>https://webvpn.nxu.edu.cn/https-443/&lt;一串hex&gt;/index.action</code>
+            </span>
+          </label>
+
+          <div class="row row-3">
+            <label class="field">
+              <span class="field-label">最多请求次数</span>
+              <input id="opt-silent-max" class="input" type="number" min="1" max="5000" step="1" inputmode="numeric">
+              <span class="field-hint">1 – 5000 次</span>
+            </label>
+            <label class="field">
+              <span class="field-label">请求间隔</span>
+              <input id="opt-silent-interval" class="input" type="number" min="100" max="60000" step="100" inputmode="numeric">
+              <span class="field-hint">单位：毫秒（≥100，别设太小）</span>
+            </label>
+            <label class="field">
+              <span class="field-label">成功后打开</span>
+              <input id="opt-silent-target" class="input" type="text" spellcheck="false" autocomplete="off"
+                     placeholder="index.action">
+              <span class="field-hint">留空=入口目录下的 index.action</span>
+            </label>
+          </div>
+
+          <label class="switch-row">
+            <span class="switch-text">
+              <span class="switch-title">成功后立刻打开页面</span>
+              <span class="switch-sub">请求成功时自动新开标签页，此时 cookie 已在浏览器里，打开就是登录态</span>
+            </span>
+            <input id="opt-silent-open" class="switch-input" type="checkbox" role="switch">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+
+          <label class="switch-row">
+            <span class="switch-text">
+              <span class="switch-title">遇到密码/账号错误立刻停止</span>
+              <span class="switch-sub">推荐开启。这类错误重试没有意义，还可能触发风控或锁号</span>
+            </span>
+            <input id="opt-silent-stop-cred" class="switch-input" type="checkbox" role="switch">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+
+          <label class="switch-row">
+            <span class="switch-text">
+              <span class="switch-title">打开浏览器时自动开始</span>
+              <span class="switch-sub">关闭时只在你点扩展图标后手动开始，更适合偶尔使用的场景</span>
+            </span>
+            <input id="opt-silent-autostart" class="switch-input" type="checkbox" role="switch">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+
+          <p class="note note-warn" id="silent-ocr-warning" hidden>
+            后台请求模式必须能自动识别验证码：请在上面的「验证码识别」里选择百度 OCR 或自建服务，并填写对应配置。
+          </p>
+        </div>
+      </section>
+
+      <!-- ================= 界面 ================= -->
+      <section class="card" aria-labelledby="sec-ui">
+        <div class="card-head">
+          <h2 id="sec-ui">界面</h2>
+          <p class="card-desc">页面内的悬浮面板与系统通知。</p>
+        </div>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <span class="switch-title">显示页面悬浮面板</span>
+            <span class="switch-sub">在教务系统页面右上角显示状态与验证码输入框；关闭后将无法手动输入验证码</span>
+          </span>
+          <input id="opt-overlay" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <span class="switch-title">成功后发送系统通知</span>
+            <span class="switch-sub">登录成功时弹出一条桌面通知</span>
+          </span>
+          <input id="opt-notify" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <div class="row row-2">
+          <label class="field">
+            <span class="field-label">成功提示自动隐藏</span>
+            <input id="opt-dismiss-sec" class="input" type="number" min="0" max="60" step="1" inputmode="numeric">
+            <span class="field-hint">单位：秒（0 = 不自动隐藏）</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- ================= 高级 ================= -->
+      <section class="card" aria-labelledby="sec-advanced">
+        <div class="card-head">
+          <h2 id="sec-advanced">高级</h2>
+          <p class="card-desc">排查问题与配置迁移。</p>
+        </div>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <span class="switch-title">调试日志</span>
+            <span class="switch-sub">在控制台输出更详细的运行信息，反馈问题时可打开</span>
+          </span>
+          <input id="opt-debug" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+
+        <fieldset class="fieldset" data-nosave>
+          <legend class="field-label">导出配置</legend>
+          <div class="radio-row">
+            <label class="radio">
+              <input type="radio" name="export-mode" value="redacted" checked>
+              <span>不含敏感信息（推荐）</span>
+            </label>
+            <label class="radio">
+              <input type="radio" name="export-mode" value="full">
+              <span>含密码与 API 密钥</span>
+            </label>
+          </div>
+          <p class="field-hint">导出的 JSON 可分享或备份；选择「不含敏感信息」时密码和密钥会被清空。</p>
+        </fieldset>
+
+        <div class="row row-inline">
+          <button id="export-btn" class="btn btn-ghost" type="button">导出配置</button>
+          <button id="import-btn" class="btn btn-ghost" type="button">导入配置</button>
+          <input id="import-file" class="sr-only" type="file" accept="application/json,.json" tabindex="-1">
+          <button id="reset-btn" class="btn btn-danger-ghost" type="button">恢复默认设置</button>
+        </div>
+      </section>
+
+      <!-- ================= 关于 ================= -->
+      <section class="card" aria-labelledby="sec-about">
+        <div class="card-head">
+          <h2 id="sec-about">关于</h2>
+        </div>
+        <dl class="about-list">
+          <div class="about-item">
+            <dt>版本</dt>
+            <dd id="about-version">—</dd>
+          </div>
+          <div class="about-item">
+            <dt>说明</dt>
+            <dd>本项目由原 Python 命令行脚本重构为 Chrome 扩展，账号与识别服务改为在扩展内配置，不必再修改 <code>config.py</code>。</dd>
+          </div>
+          <div class="about-item">
+            <dt>旧版</dt>
+            <dd>原脚本仍保留在仓库的 <code>legacy/python</code> 目录（<code>main.py</code> / <code>login.py</code> / <code>config.py</code>），作为参考与对照。</dd>
+          </div>
+          <div class="about-item">
+            <dt>声明</dt>
+            <dd>教务系统为开源项目，<strong>禁止用于盈利</strong>。请合理使用，避免对学校服务器造成压力。</dd>
+          </div>
+        </dl>
+      </section>
+    </form>
+  </main>
+
+  <div class="savebar">
+    <div class="savebar-inner">
+      <span id="dirty-hint" class="dirty-hint">修改后记得保存</span>
+      <button id="save-btn" class="btn btn-primary" type="submit" form="settings-form">保存设置</button>
+    </div>
+  </div>
+
+  <script type="module" src="./options.js"></script>
+</body>
+</html>

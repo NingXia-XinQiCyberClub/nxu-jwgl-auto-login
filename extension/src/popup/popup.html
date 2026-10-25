@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>教务系统自动登录</title>
+  <link rel="stylesheet" href="./popup.css">
+</head>
+<body>
+  <div class="app">
+    <header class="app-head">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">NXU</span>
+        <h1>教务系统自动登录</h1>
+      </div>
+      <label class="switch" title="启用或暂停页面加载后的自动登录">
+        <input id="enabled-toggle" type="checkbox" role="switch" aria-label="启用自动登录">
+        <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+      </label>
+    </header>
+
+    <div id="banner" class="banner" role="alert" aria-live="assertive" hidden></div>
+
+    <section class="status-card" aria-labelledby="status-heading">
+      <h2 id="status-heading" class="sr-only">运行状态</h2>
+      <div class="status-line">
+        <span id="status-dot" class="dot" data-tone="idle" aria-hidden="true"></span>
+        <span id="status-title" class="status-title" data-tone="idle">待命</span>
+        <span id="status-attempts" class="status-attempts" hidden></span>
+      </div>
+      <p id="status-message" class="status-message" aria-live="polite">读取状态中…</p>
+      <p class="status-meta">
+        <span>上次成功：<span id="last-success" class="meta-value">暂无</span></span>
+        <span id="page-hint" class="page-hint" hidden>当前页不是教务系统</span>
+      </p>
+      <p id="mode-hint" class="mode-hint" hidden></p>
+    </section>
+
+    <button id="primary-btn" class="btn btn-primary" type="button" data-action="open">打开教务系统</button>
+
+    <section id="captcha-card" class="captcha-card" aria-labelledby="captcha-title" hidden>
+      <h2 id="captcha-title" class="captcha-title">请输入验证码</h2>
+      <img id="captcha-img" class="captcha-img" alt="验证码图片">
+      <form id="captcha-form" class="captcha-form">
+        <label class="sr-only" for="captcha-input">验证码</label>
+        <input id="captcha-input" class="input captcha-input" type="text" inputmode="text"
+               autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="12" placeholder="验证码">
+        <button id="captcha-submit" class="btn btn-primary btn-compact" type="submit">确认</button>
+      </form>
+      <p class="captcha-hint">也可以直接在页面右上角的悬浮面板里输入。</p>
+    </section>
+
+    <section class="logs" aria-labelledby="logs-title">
+      <h2 id="logs-title" class="logs-title">最近日志</h2>
+      <ul id="log-list" class="log-list"></ul>
+      <p id="log-empty" class="log-empty">暂无日志</p>
+    </section>
+
+    <footer class="app-foot">
+      <button id="open-options" class="link" type="button">设置</button>
+      <button id="clear-state" class="link link-danger" type="button">清空状态</button>
+    </footer>
+  </div>
+
+  <script type="module" src="./popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+/*
+ * 悬浮面板「宿主」样式 —— 只负责定位与隔离。
+ *
+ * 分工说明（与 content-script.js 里的 OVERLAY_CSS 配合）：
+ *   - 本文件：只作用于 #jwgl-auto-login-root 这一个宿主元素，
+ *     做两件事：① 固定在右上角、置顶 z-index；② 用 all: initial 把站点那套
+ *     老旧 Struts2 全局样式（字体、行高、button/input 重置等）挡在宿主之外。
+ *   - content-script.js：卡片内部（标题、状态点、验证码区、按钮、日志）的
+ *     全部样式写在 Shadow DOM 的 <style> 里，因为 Shadow DOM 内部无法被外部
+ *     文档的 CSS 选中，写在这里不会生效。
+ *
+ * 结论：不要在宿主上写任何卡片外观（背景、圆角、阴影都在 Shadow DOM 内）；
+ *       也不要在 content-script.js 里再写宿主定位，避免两边打架。
+ */
+
+#jwgl-auto-login-root {
+  /* 先整体重置，隔离站点样式；下面再逐项声明我们需要的属性 */
+  all: initial;
+
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483647;
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  /* 让宿主的层叠上下文独立，站点再高的 z-index 也压不住 */
+  isolation: isolate;
+  /* 站点若有 * { pointer-events: none } 之类的脏规则，这里强行恢复 */
+  pointer-events: auto;
+  /* 站点若设置了 html { zoom } / 字体缩放，宿主内部统一走正常比例 */
+  zoom: 1;
+  /* 避免站点 transform 影响 fixed 定位 */
+  transform: none;
+  /* 面板本身不应被文本选中干扰 */
+  user-select: none;
+  -webkit-user-select: none;
+  /* 不参与站点的 flex/grid 布局 */
+  float: none;
+  contain: layout style;
+}
+
+/* 隐藏态：隐藏时不能占位置，也不能捕获点击 */
+#jwgl-auto-login-root[hidden] {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* 窄屏（手机/小窗）时贴边，避免遮挡整个页面 */
+@media (max-width: 480px) {
+  #jwgl-auto-login-root {
+    top: 8px;
+    right: 8px;
+    left: 8px;
+  }
+}

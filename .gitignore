@@ -1,0 +1,27 @@
+venv
+__pycache__
+
+# Python 原版相关
+*.pyc
+.python-version
+
+# 本机配置：含本人账号与 OCR 密钥，禁止提交
+legacy/python/config.py
+config.py
+
+# 推送脚本的本机敏感词清单（含真实 AK/SK、学号、密码、姓名、会话票据）
+scripts/sensitive.txt
+
+# 调试产物
+failed_captcha_*.png
+
+# 扩展打包产物（由 chrome://extensions 生成）
+*.crx
+*.pem
+*.zip
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

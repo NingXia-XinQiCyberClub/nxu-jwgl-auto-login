@@ -1,0 +1,491 @@
+/*
+ * 弹出面板样式。
+ * 宽度固定 360px：Chrome popup 的宽度由内容撑开，过宽会在小屏被截断，
+ * 过窄则验证码图片看不清，360 是两者折中后的常用值。
+ */
+
+:root {
+  color-scheme: light;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --success: #16a34a;
+  --warn: #d97706;
+  --danger: #dc2626;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --surface: #ffffff;
+  --surface-alt: #f9fafb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* 作者样式里的 display:flex/grid 会盖掉 UA 的 [hidden]，这里强制生效 */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 输入框在 popup 里必须显式声明浅色，否则系统暗色模式会把它们涂黑 */
+input,
+button {
+  font-family: inherit;
+  color-scheme: light;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- 顶部 ---------- */
+.app-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.brand-mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 开关 ---------- */
+.switch {
+  flex: none;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-track {
+  display: block;
+  width: 38px;
+  height: 22px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #d1d5db;
+  transition: background 0.16s ease;
+}
+
+.switch-thumb {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.28);
+  transition: transform 0.16s ease;
+}
+
+.switch input:checked + .switch-track {
+  background: var(--primary);
+}
+
+.switch input:checked + .switch-track .switch-thumb {
+  transform: translateX(16px);
+}
+
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.switch input:disabled + .switch-track {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- 错误横幅 ---------- */
+.banner {
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 12px;
+  word-break: break-word;
+}
+
+/* 非错误类提示（例如「正在登录中」）用中性色，避免看起来像故障 */
+.banner[data-kind="info"] {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* ---------- 状态卡片 ---------- */
+.status-card {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-alt);
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9ca3af;
+}
+
+.dot[data-tone="running"] {
+  background: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
+.dot[data-tone="warn"] {
+  background: var(--warn);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.16);
+}
+
+.dot[data-tone="success"] {
+  background: var(--success);
+}
+
+.dot[data-tone="error"] {
+  background: var(--danger);
+}
+
+.status-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.status-title[data-tone="running"] {
+  color: var(--primary-dark);
+}
+
+.status-title[data-tone="warn"] {
+  color: #b45309;
+}
+
+.status-title[data-tone="success"] {
+  color: #15803d;
+}
+
+.status-title[data-tone="error"] {
+  color: #b91c1c;
+}
+
+.status-attempts {
+  margin-left: auto;
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: var(--primary-dark);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-message {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.status-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.meta-value {
+  color: #374151;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-hint {
+  color: var(--warn);
+}
+
+/* 静默模式提示：说明当前是后台请求而不是页面自动填充 */
+.mode-hint {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--surface-alt);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.mode-hint[data-tone="warn"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.btn-compact {
+  flex: none;
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---------- 验证码 ---------- */
+.captcha-card {
+  padding: 10px;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fffbeb;
+}
+
+.captcha-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.captcha-img {
+  display: block;
+  width: 100%;
+  height: 76px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.captcha-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.input {
+  min-width: 0;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.captcha-input {
+  flex: 1 1 auto;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.captcha-hint {
+  margin: 6px 0 0;
+  color: #92400e;
+  font-size: 11.5px;
+  opacity: 0.8;
+}
+
+/* ---------- 日志 ---------- */
+.logs-title {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.log-row {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.log-time {
+  flex: none;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-text {
+  color: #4b5563;
+  word-break: break-word;
+}
+
+.log-row[data-level="error"] .log-text {
+  color: var(--danger);
+}
+
+.log-row[data-level="warn"] .log-text {
+  color: #b45309;
+}
+
+.log-row[data-level="success"] .log-text {
+  color: #15803d;
+}
+
+.log-empty {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 11.5px;
+}
+
+/* ---------- 底部 ---------- */
+.app-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.link-danger {
+  color: var(--muted);
+}
+
+.link-danger:hover {
+  color: var(--danger);
+}
